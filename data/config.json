@@ -1,0 +1,8 @@
+{
+    "learn_threshold" : 5,
+    "learn_weights" : {
+        "bad" : 1.0,
+        "neutral" : 0.5,
+        "good" : 0.2
+    }
+}
