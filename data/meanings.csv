@@ -2,7 +2,7 @@ Word,Type,Meaning 1,Meaning 2,Meaning 3,Meaning 4,Meaning 5
 malign,Verb,speak unfavorably about,,,,
 malign,Adjective,evil or harmful in nature or influence,having or exerting a malignant influence,,,
 indignant,Adjective,angered at something unjust or wrong,,,,
-personable,Adjective,(of persons,,,,
+personable,Adjective,(of a person) having a pleasant appearance and manner.,,,,
 munificent,Adjective,very generous,,,,
 despot,Noun,a cruel and oppressive dictator,,,,
 mendacious,Adjective,given to lying,intentionally untrue,,,
@@ -124,7 +124,6 @@ effusive,Adjective,uttered with unrestrained enthusiasm,extravagantly demonstrat
 blithe,Adjective,lacking or showing a lack of due concern,carefree and happy and lighthearted,,,
 fetid,Adjective,offensively malodorous,,,,
 wizened,Adjective,lean and wrinkled by shrinkage as from age or illness,,,,
-arid,Adjective,lacking sufficient water or rainfall,lacking vitality or spirit; lifeless,,,
 hale,Verb,"to cause to do through pressure or necessity, by physical, moral or intellectual means",draw slowly or heavily,,,
 hale,Adjective,exhibiting or restored to vigorous good health,,,,
 desiccated,Verb,preserve by removing all water and liquids from,remove water from,lose water or moisture,,
@@ -166,7 +165,7 @@ melancholy,Adjective,characterized by or causing or expressing sadness,grave or 
 despondent,Adjective,without or almost without hope,,,,
 contrite,Adjective,feeling or expressing pain or sorrow for sins or offenses,,,,
 flag,Noun,a listing printed in all issues of a newspaper or magazine (usually on the editorial page,flagpole used to mark the position of the hole on a golf green,stratified stone that splits into pieces suitable as paving stones,a conspicuously marked or shaped tail,
-flag,Verb,communicate or signal with a flag,"droop, sink, or settle from or as if from pressure or loss of tautness",decorate with flags,become less intense,
+flag,Verb,communicate or signal with a flag,"droop, sink, or settle from or as if from pressure or loss of tautness",decorate with flags,become less intense,become tired or less enthusiastic or dynamic
 scintillating,Verb,give off,reflect brightly,emit or reflect light in a flickering manner,physics: fluoresce momentarily when struck by a charged particle or high-energy photon,be lively or brilliant or exhibit virtuosity
 scintillating,Adjective,brilliantly clever,marked by high spirits or excitement,having brief brilliant points or flashes of light,,
 quack,Noun,an untrained person who pretends to be a physician and who dispenses medical advice,the harsh sound of a duck,,,

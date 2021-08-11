@@ -4,5 +4,10 @@
         "bad" : 1.0,
         "neutral" : 0.5,
         "good" : 0.2
+    },
+    "status_colors" : {
+        "bad" : "red",
+        "neutral" : "yellow",
+        "good" : "green"
     }
 }

@@ -3,3 +3,4 @@ PyDictionary
 tqdm
 flask
 markdown
+termcolor

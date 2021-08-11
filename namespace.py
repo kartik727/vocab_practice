@@ -21,5 +21,7 @@ class Namespace:
             ret_dict[arg] = getattr(self, arg)
         return  ret_dict
 
-    def get(self):
-        return self.get_from_list(self.__dict__.keys())
+    def get(self, arg=None):
+        if arg is None:
+            return self.get_from_list(self.__dict__.keys())
+        return getattr(self, arg)
