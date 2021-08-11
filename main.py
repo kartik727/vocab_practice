@@ -3,8 +3,6 @@ import pandas as pd
 from tqdm import tqdm
 import argparse
 
-word = 'malign'
-
 def get_meaning(word):
     meaning = pdict.meaning(word)
     df = pd.DataFrame.from_dict(meaning, orient='index')
