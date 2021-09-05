@@ -9,5 +9,6 @@
         "bad" : "red",
         "neutral" : "yellow",
         "good" : "green"
-    }
+    },
+    "group_size" : 40
 }
