@@ -55,12 +55,18 @@ def main():
     parser.add_argument('-w', '--add_words', nargs='+', default=[], help='Terminal option to specify words')
     parser.add_argument('--terminal_only', action='store_true', help='Use words only from terminal, ignoring words file')
     parser.add_argument('-v', '--verbose', action='store_true', help='Print the results for newly added words')
+    parser.add_argument('--word_filename', default='words.csv', help='Give the name of the file to add words')
+    parser.add_argument('--save_filename', default='meanings.csv', help='Give the name of the file to save final meanings')
     args = parser.parse_args()
 
-    data_path = 'data/words.csv'
-    save_path = 'data/meanings.csv'
+    data_path = 'data/' + args.word_filename
+    save_path = 'data/' + args.save_filename
 
-    words = list(pd.read_csv(data_path)['Word']) + args.add_words
+    if args.terminal_only:
+        words = args.add_words
+    else:
+        words = list(pd.read_csv(data_path, on_bad_lines='skip')['Word']) + args.add_words
+
     meanings = get_list_meanings(words, save_path, reset=args.reset, verbose=args.verbose)
     meanings.to_csv(save_path)
 
