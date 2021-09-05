@@ -1,4 +1,6 @@
-from numpy import dtype
+import warnings
+warnings.simplefilter(action='ignore')
+
 import pandas as pd
 import argparse
 import json
@@ -14,7 +16,7 @@ def update(df: pd.DataFrame, fc_df: pd.DataFrame) -> None:
             fc_df.loc[row.name]
         except KeyError:
             fc_row = {'count' : 0, 'current' : 0, 'status' : 0}
-            fc_df.loc[row.name] = fc_row
+            fc_df.loc[row.name, :] = fc_row
 
     for _, row in fc_df.iterrows():
         try:
@@ -88,10 +90,13 @@ def flashcards_(card: pd.Series, fc_df: pd.DataFrame, n_meanings: int, config: N
 
         correct = bool(correct)
 
-        
-
         fc_row['count'] += 1
-        fc_row['current'] = fc_row['current'] + 1 if correct else 0
+        fc_row['session_tries'] += 1
+        if correct:
+            fc_row['current'] += 1
+            fc_row['session_correct'] += 1
+        else:
+            fc_row['current'] = 0
 
         assert fc_row['current'] >= 0, 'Something is wrong. Current underflow.'
 
@@ -102,7 +107,7 @@ def flashcards_(card: pd.Series, fc_df: pd.DataFrame, n_meanings: int, config: N
         else:
             fc_row['status'] = 0
 
-        fc_df.loc[card.name] = fc_row
+        fc_df.loc[card.name, :] = fc_row
 
     except KeyboardInterrupt:
         print('Cancelled.')
@@ -111,22 +116,65 @@ def flashcards_(card: pd.Series, fc_df: pd.DataFrame, n_meanings: int, config: N
     finally:
         print('\n' + '-'*80 + '\n')
 
-def flashcards(df: pd.DataFrame, fc_df: pd.DataFrame, config: Namespace) -> None:
+def flashcards(df: pd.DataFrame, fc_df: pd.DataFrame, config: Namespace, group_num: int) -> None:
     n_meanings = len(df.columns)
+
+    if group_num is None:
+        num_grps = (n_meanings - 1) // config.group_size + 1
+        selected_grp = 0
+        max_not_learned = 0
+        for group in range(num_grps):
+            grp_start = group * config.group_size
+            grp_end = (group + 1) * config.group_size
+            not_learned = fc_df.iloc[grp_start: grp_end]['status'].apply(lambda x: 1 if x < 1 else 0).sum()
+            if not_learned > max_not_learned:
+                max_not_learned = not_learned
+                selected_grp = group
+
+        group_num = selected_grp
+
+    print(f'Doing grp {group_num}\n')
+
+    grp_start = group_num * config.group_size
+    grp_end = (group_num + 1)* config.group_size
+
+    fc_grp = fc_df.iloc[grp_start: grp_end]
+    fc_grp['session_tries'] = 0
+    fc_grp['session_correct'] = 0
 
     try:
         while True:
-            wts = fc_df['status'].apply(wt_func, weights=config.learn_weights)
-            idx = fc_df.sample(weights=wts).iloc[0]
+            wts = fc_grp['status'].apply(wt_func, weights=config.learn_weights)
+            idx = fc_grp.sample(weights=wts).iloc[0]
             flashcard = df.loc[idx.name]
-            flashcards_(flashcard, fc_df, n_meanings, config)
+            flashcards_(flashcard, fc_grp, n_meanings, config)
     except LearningOverException:
         print('Learning Over.')
+    finally:
+        show_session_data(fc_grp)
 
+def show_session_data(fc_df: pd.DataFrame) -> None:
+    tot_tries = fc_df['session_tries'].sum()
+    tot_correct = fc_df['session_correct'].sum()
+    tot_words = len(fc_df)
+    words_tried = fc_df['session_tries'].apply(lambda x: 1 if x > 0 else 0).sum()
+
+    print(f'Number of words in grp                  : {tot_words}')
+    print(f'Number of words appeared in session     : {words_tried}')
+    print(f'Total tries in the session              : {tot_tries}')
+    print(f'Total correct answers in the session    : {tot_correct}')
+
+    response = input('Enter 1 to show details. Enter anything else to exit.\n')
+
+    if response=='1':
+        print(fc_df)
+    else:
+        print('Exiting')
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('--status', action='store_true', help='Give status of current progression')
+    parser.add_argument('-g', '--group_num', default=None, help='Option to practice a particular group')
     args = parser.parse_args()
 
     save_path = 'data/meanings.csv'
@@ -143,7 +191,7 @@ def main() -> None:
         show_status(fc_df)
     else:
         update(df, fc_df)
-        flashcards(df, fc_df, config)
+        flashcards(df, fc_df, config, group_num=args.group_num)
         fc_df.to_csv(data_path)
 
         print('All done. Nice.')
