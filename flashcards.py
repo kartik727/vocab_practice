@@ -90,31 +90,30 @@ def flashcards_(card: pd.Series, fc_df: pd.DataFrame, n_meanings: int, config: N
 
         correct = bool(correct)
 
-        fc_row['count'] += 1
-        fc_row['session_tries'] += 1
+        fc_row.loc['count'] += 1
+        fc_row.loc['session_tries'] += 1
         if correct:
-            fc_row['current'] += 1
-            fc_row['session_correct'] += 1
+            fc_row.loc['current'] += 1
+            fc_row.loc['session_correct'] += 1
         else:
-            fc_row['current'] = 0
+            fc_row.loc['current'] = 0
 
-        assert fc_row['current'] >= 0, 'Something is wrong. Current underflow.'
+        assert fc_row.loc['current'] >= 0, 'Something is wrong. Current underflow.'
 
-        if fc_row['current'] == 0:
-            fc_row['status'] = -1
-        elif fc_row['current'] >= config.learn_threshold:
-            fc_row['status'] = 1
+        if fc_row.loc['current'] == 0:
+            fc_row.loc['status'] = -1
+        elif fc_row.loc['current'] >= config.learn_threshold:
+            fc_row.loc['status'] = 1
         else:
-            fc_row['status'] = 0
+            fc_row.loc['status'] = 0
 
         fc_df.loc[card.name, :] = fc_row
+        print('\n' + '-'*80 + '\n')
+        return fc_df
 
     except KeyboardInterrupt:
         print('Cancelled.')
         raise LearningOverException
-
-    finally:
-        print('\n' + '-'*80 + '\n')
 
 def flashcards(df: pd.DataFrame, fc_df: pd.DataFrame, config: Namespace, group_num: int) -> None:
     n_meanings = len(df.columns)
@@ -147,11 +146,13 @@ def flashcards(df: pd.DataFrame, fc_df: pd.DataFrame, config: Namespace, group_n
             wts = fc_grp['status'].apply(wt_func, weights=config.learn_weights)
             idx = fc_grp.sample(weights=wts).iloc[0]
             flashcard = df.loc[idx.name]
-            flashcards_(flashcard, fc_grp, n_meanings, config)
+            fc_ret = flashcards_(flashcard, fc_grp, n_meanings, config)
+            fc_grp.update(fc_ret)
     except LearningOverException:
         print('Learning Over.')
     finally:
         show_session_data(fc_grp)
+        fc_df.update(fc_grp)
 
 def show_session_data(fc_df: pd.DataFrame) -> None:
     tot_tries = fc_df['session_tries'].sum()
@@ -187,10 +188,11 @@ def main() -> None:
     df = pd.read_csv(save_path, index_col=['Word', 'Type'])
     fc_df = pd.read_csv(data_path, index_col=['Word', 'Type'], dtype={'count':int, 'current':int, 'status':int})
 
+    update(df, fc_df)
+    
     if args.status:
         show_status(fc_df)
     else:
-        update(df, fc_df)
         flashcards(df, fc_df, config, group_num=args.group_num)
         fc_df.to_csv(data_path)
 
