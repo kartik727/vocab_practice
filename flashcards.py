@@ -175,7 +175,7 @@ def show_session_data(fc_df: pd.DataFrame) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('--status', action='store_true', help='Give status of current progression')
-    parser.add_argument('-g', '--group_num', default=None, type=int, help='Option to practice a particular group')
+    parser.add_argument('-g', '--group-num', default=None, type=int, help='Option to practice a particular group')
     args = parser.parse_args()
 
     save_path = 'data/meanings.csv'
