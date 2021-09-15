@@ -204,9 +204,9 @@ def main() -> None:
         show_status(fc_df, args.no_color)
     else:
         flashcards(df, fc_df, config, args=args)
-        fc_df.to_csv(data_path)
 
-        print('All done. Nice.')
+    fc_df.to_csv(data_path)
+    print('All done. Nice.')
 
 if __name__ == '__main__':
     main()
