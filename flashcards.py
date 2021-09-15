@@ -34,14 +34,20 @@ def get_status_str(status: int):
     else:
         raise ValueError('Invalid status value, must be one of {-1, 0, 1}')
 
-def show_status(fc_df: pd.DataFrame):
+def print_colored(s: str, color: str, no_color: bool = False) -> None:
+    if no_color:
+        print(s)
+    else:
+        print(colored(s, color))
+
+def show_status(fc_df: pd.DataFrame, no_color: bool = False) -> None:
     tot = len(fc_df)
     nums = [len(fc_df[fc_df['status']==x]) for x in [-1, 0, 1]]
 
-    print(colored(f'\nTotal words   : {tot}\n', 'blue'))
-    print(colored(f'Mastered      : {nums[2]}', 'green'))
-    print(colored(f'Learning      : {nums[1]}', 'yellow'))
-    print(colored(f'Remaining     : {nums[0]}', 'red'))
+    print_colored(f'\nTotal words   : {tot}\n', 'blue', no_color)
+    print_colored(f'Mastered      : {nums[2]}', 'green', no_color)
+    print_colored(f'Learning      : {nums[1]}', 'yellow', no_color)
+    print_colored(f'Remaining     : {nums[0]}', 'red', no_color)
 
 def wt_func(val, weights):
     if val==1:
@@ -53,12 +59,12 @@ def wt_func(val, weights):
     else:
         raise ValueError('Invalid status value, must be one of {-1, 0, 1}')
 
-def flashcards_(card: pd.Series, fc_df: pd.DataFrame, n_meanings: int, config: Namespace) -> None:
+def flashcards_(card: pd.Series, fc_df: pd.DataFrame, n_meanings: int, config: Namespace, no_color: bool = False) -> None:
     fc_row = fc_df.loc[card.name]
     status_str = get_status_str(fc_row['status'])
 
-    print(colored(card.name[0], config.status_colors.get(status_str)))
-    print(colored(card.name[1], config.status_colors.get(status_str)))
+    print_colored(card.name[0], config.status_colors.get(status_str), no_color)
+    print_colored(card.name[1], config.status_colors.get(status_str), no_color)
 
     try:
         correct = input('Press Enter to show meaning\n')
@@ -115,8 +121,11 @@ def flashcards_(card: pd.Series, fc_df: pd.DataFrame, n_meanings: int, config: N
         print('Cancelled.')
         raise LearningOverException
 
-def flashcards(df: pd.DataFrame, fc_df: pd.DataFrame, config: Namespace, group_num: int) -> None:
+def flashcards(df: pd.DataFrame, fc_df: pd.DataFrame, config: Namespace, args: argparse.Namespace) -> None:
     n_meanings = len(df.columns)
+
+    group_num = args.group_num
+    no_color =args.no_color
 
     if group_num is None:
         num_grps = (n_meanings - 1) // config.group_size + 1
@@ -146,7 +155,7 @@ def flashcards(df: pd.DataFrame, fc_df: pd.DataFrame, config: Namespace, group_n
             wts = fc_grp['status'].apply(wt_func, weights=config.learn_weights)
             idx = fc_grp.sample(weights=wts).iloc[0]
             flashcard = df.loc[idx.name]
-            fc_ret = flashcards_(flashcard, fc_grp, n_meanings, config)
+            fc_ret = flashcards_(flashcard, fc_grp, n_meanings, config, no_color=no_color)
             fc_grp.update(fc_ret)
     except LearningOverException:
         print('Learning Over.')
@@ -175,7 +184,8 @@ def show_session_data(fc_df: pd.DataFrame) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('--status', action='store_true', help='Give status of current progression')
-    parser.add_argument('-g', '--group_num', default=None, type=int, help='Option to practice a particular group')
+    parser.add_argument('-g', '--group-num', default=None, type=int, help='Option to practice a particular group', metavar='')
+    parser.add_argument('--no-color', action='store_true', help='Remove colored outputs if they are not displaying properly')
     args = parser.parse_args()
 
     save_path = 'data/meanings.csv'
@@ -191,9 +201,9 @@ def main() -> None:
     update(df, fc_df)
     
     if args.status:
-        show_status(fc_df)
+        show_status(fc_df, args.no_color)
     else:
-        flashcards(df, fc_df, config, group_num=args.group_num)
+        flashcards(df, fc_df, config, args=args)
         fc_df.to_csv(data_path)
 
         print('All done. Nice.')
