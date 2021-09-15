@@ -18,6 +18,7 @@ def get_list_meanings(words:list, old_data_path:str, reset:bool=False, verbose:b
         new_words = [word for word in words if word not in old_words]
     else:
         new_words = words
+        print('Old data has been reset.')
 
     print(f'Number of new words: {len(new_words)}')
 
@@ -52,22 +53,32 @@ def get_list_meanings(words:list, old_data_path:str, reset:bool=False, verbose:b
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-r', '--reset', action='store_true', help='Remove all current words and build dictionary from scratch')
-    parser.add_argument('-w', '--add_words', nargs='+', default=[], help='Terminal option to specify words')
-    parser.add_argument('--terminal_only', action='store_true', help='Use words only from terminal, ignoring words file')
+    parser.add_argument('-w', '--add-words', nargs='+', default=[], help='Terminal option to specify words', metavar='')
+    parser.add_argument('--terminal-only', action='store_true', help='Use words only from terminal, ignoring words file')
     parser.add_argument('-v', '--verbose', action='store_true', help='Print the results for newly added words')
-    parser.add_argument('--word_filename', default='words.csv', help='Give the name of the file to add words')
-    parser.add_argument('--save_filename', default='meanings.csv', help='Give the name of the file to save final meanings')
+    parser.add_argument('--word-filename', default='words.csv', help='Give the name of the file to add words', metavar='')
+    parser.add_argument('--save-filename', default='meanings.csv', help='Give the name of the file to save final meanings', metavar='')
     args = parser.parse_args()
 
     data_path = 'data/' + args.word_filename
     save_path = 'data/' + args.save_filename
+
+    reset_flag = args.reset
+    if reset_flag:
+        confirmation_msg = 'Reset the data file'
+        response = input(f'You are about to reset the file containing words and meanings. To confirm type `{confirmation_msg}`.\n')
+        if response == confirmation_msg:
+            print('Reset confirmed.')
+        else:
+            print('Incorrect confirmation response. Aborting.')
+            reset_flag = False
 
     if args.terminal_only:
         words = args.add_words
     else:
         words = list(pd.read_csv(data_path, on_bad_lines='skip')['Word']) + args.add_words
 
-    meanings = get_list_meanings(words, save_path, reset=args.reset, verbose=args.verbose)
+    meanings = get_list_meanings(words, save_path, reset=reset_flag, verbose=args.verbose)
     meanings.to_csv(save_path)
 
 if __name__ == '__main__':

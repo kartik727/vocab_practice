@@ -186,6 +186,7 @@ def main() -> None:
     parser.add_argument('--status', action='store_true', help='Give status of current progression')
     parser.add_argument('-g', '--group-num', default=None, type=int, help='Option to practice a particular group', metavar='')
     parser.add_argument('--no-color', action='store_true', help='Remove colored outputs if they are not displaying properly')
+    parser.add_argument('--shuffle', action='store_true', help='Shuffle the order of words and their groups.')
     args = parser.parse_args()
 
     save_path = 'data/meanings.csv'
@@ -199,6 +200,12 @@ def main() -> None:
     fc_df = pd.read_csv(data_path, index_col=['Word', 'Type'], dtype={'count':int, 'current':int, 'status':int})
 
     update(df, fc_df)
+
+    if args.shuffle:
+        fc_df = fc_df.sample(frac=1.)
+        fc_df.to_csv(data_path)
+        print('Shuffle complete.')
+        return
     
     if args.status:
         show_status(fc_df, args.no_color)
