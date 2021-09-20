@@ -1,6 +1,7 @@
 import argparse
 import enum
 import random
+from termcolor import colored
 
 class TopicStatus(enum.Enum):
     statement = 1
@@ -36,7 +37,8 @@ class Topic:
         bld = ''
         for s in self.statement:
             bld += s + '\n'
-        bld += '\n' + self.instruction + '\n'
+        bld = colored(bld, 'yellow')
+        bld += colored('\n' + self.instruction + '\n', 'blue', on_color='on_yellow')
         return bld
 
     @staticmethod
@@ -70,13 +72,24 @@ class TopicBuffer:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--issue-filename', default='issue_pool.txt', help='Name of the file to be read for the issue pool', metavar='')
-    parser.add_argument('--argument-filename', default='argument_pool.txt', help='Name of the file to be read for the issue pool', metavar='')
-    parser.add_argument('-t', '--type', default='issue', help='Select if you want an `issue` task or `argument` task', metavar='')
+    parser.add_argument('--argument-filename', default='argument_pool.txt', help='Name of the file to be read for the argument pool', metavar='')
+    parser.add_argument('-i', '--issue', action='store_true', help='Select if you want an `issue` task')
+    parser.add_argument('-a', '--argument', action='store_true', help='Select if you want an `argument` task')
     args = parser.parse_args()
 
-    if args.type == 'issue':
+    assert not (args.issue and args.argument), 'You can only request one of `issue` or `argument` task'
+
+    if args.argument:
+        issue = False
+    elif args.issue:
+        issue = True
+    else:
+        print('No option between `issue` and `argument` chosen. Selecting `issue` by default.')
+        issue = True
+
+    if issue:
         filename = args.issue_filename
-    elif args.type == 'argument':
+    else:
         filename = args.argument_filename
 
     data_path = 'data/' + filename
@@ -87,10 +100,11 @@ def main():
             line = line.rstrip()
             tb.build(line)
         print(f'Total topics built: {len(tb.topic_db)}')
-            
+
     topic = random.choice(tb.topic_db)
     print('\n\n' + '-'*80 + '\n')
     print(topic)
+    print('\n' + '-'*80 + '\n')
 
 
 if __name__ == '__main__':
